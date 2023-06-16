@@ -1,0 +1,64 @@
+﻿@page "/lerbiblia/{abbrev}"
+@using APIBible.Data
+
+<PageTitle>Biblia Online</PageTitle>
+
+@if (errorMessage == null)
+{
+    <h3>Selecione um Capitulo:</h3>    
+    <select @onchange="OnSelectChange">
+        @for (int i = 1; i <= (int)model.Chapters; i++)
+        {
+            <option  value=@i>@i</option>
+        }
+    </select>
+
+    @if (isLoading)
+    {
+        <p>Aguardando...</p>
+    }
+    else
+    {
+        @foreach (var verse in scripture.verses)
+        {
+            <p>v.@verse.Number: @verse.Text</p>
+        }
+    }
+}
+else
+{
+    <p>Erro - @errorMessage.ToString()</p>
+}
+
+
+@code {
+    private FindBooks model;
+    private Scripture scripture;
+    private bool isLoading = true;
+    private string errorMessage;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            var bibleAPIService = new BibleAPIService(new HttpClient());
+            var response = bibleAPIService.GetChapter(abbrev);
+            model = response;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            isLoading = false;
+        }
+    }
+    private void OnSelectChange(ChangeEventArgs e)
+    {
+        var bibleAPIService = new BibleAPIService(new HttpClient());
+        var response = bibleAPIService.GetScripture(abbrev, e.Value.ToString());
+        scripture = response;
+        isLoading = false;
+    }
+
+    [Parameter]
+    public string abbrev { get; set; }
+}

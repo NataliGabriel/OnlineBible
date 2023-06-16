@@ -1,0 +1,48 @@
+﻿@page "/biblia"
+@using APIBible.Data
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager navigationManager
+
+<PageTitle>Bilia Online</PageTitle>
+
+@if (errorMessage == null)
+{
+    <ul>
+        @foreach (var books in model)
+        {
+            <li>
+                <a @onclick="(() => ChangePage(books.abbrev.pt))">
+                    <h4>@books.name</h4>
+                </a>
+                <p>@books.abbrev.pt</p>
+                <p>@books.chapters</p>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Erro - @errorMessage.ToString()</p>
+}
+
+
+@code {
+    private BibleModel[] model;
+    private bool isLoading = true;
+    private string errorMessage;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            var bibleAPIService = new BibleAPIService(new HttpClient());
+            model = bibleAPIService.GetBooks();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            isLoading = false;
+        }
+    }
+    private void ChangePage(string abbrev) => navigationManager.NavigateTo("/lerbiblia/" + abbrev);
+}
