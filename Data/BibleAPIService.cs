@@ -28,7 +28,7 @@ namespace APIBible.Data
         }
         public Scripture GetScripture(string abbrev, string chapter)
         {
-            string GetBooksURL = BaseUrl + "verses/acf/" + abbrev +"/" + chapter;
+            string GetBooksURL = BaseUrl + "verses/acf/" + abbrev + "/" + chapter;
             var response = _httpClient.GetStringAsync(GetBooksURL).Result;
             return JsonConvert.DeserializeObject<Scripture>(response);
         }

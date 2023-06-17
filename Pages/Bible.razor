@@ -7,18 +7,23 @@
 
 @if (errorMessage == null)
 {
-    <ul>
-        @foreach (var books in model)
-        {
-            <li>
-                <a @onclick="(() => ChangePage(books.abbrev.pt))">
-                    <h4>@books.name</h4>
+    <!-- Tela inicial -->
+    <div class="container">
+        <h1 class="title">Bíblia</h1>
+        <div class="books">
+            @foreach (var books in model)
+            {
+                <a @onclick="(() => ChangePage(books.abbrev.pt, books.name))">
+                    <div class="book">
+
+                        <h3 class="book-title">@books.name</h3>
+                        <p class="chapter-count">@books.chapters Capítulos</p>
+
+                    </div>
                 </a>
-                <p>@books.abbrev.pt</p>
-                <p>@books.chapters</p>
-            </li>
-        }
-    </ul>
+            }
+        </div>
+    </div>
 }
 else
 {
@@ -44,5 +49,5 @@ else
             isLoading = false;
         }
     }
-    private void ChangePage(string abbrev) => navigationManager.NavigateTo("/lerbiblia/" + abbrev);
+    private void ChangePage(string abbrev, string Name) => navigationManager.NavigateTo("/lerbiblia/" + abbrev + "/" + Name);
 }

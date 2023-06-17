@@ -1,17 +1,29 @@
-﻿@page "/lerbiblia/{abbrev}"
+﻿@page "/lerbiblia/{abbrev}/{Name}"
 @using APIBible.Data
-
+@inject NavigationManager navigationManager
 <PageTitle>Biblia Online</PageTitle>
 
 @if (errorMessage == null)
 {
-    <h3>Selecione um Capitulo:</h3>    
-    <select @onchange="OnSelectChange">
+    <style>
+        .selected {
+            color: red;
+        }
+    </style>
+
+    <a class="back-arrow" @onclick="GoBack">
+        <i class="oi oi-arrow-left"></i> <!-- Adicione o ícone de seta aqui, usando uma biblioteca de ícones como o Font Awesome -->
+</a>
+
+    <h2 class="title">@Name</h2>
+    <ul class="chapter-list">
         @for (int i = 1; i <= (int)model.Chapters; i++)
         {
-            <option  value=@i>@i</option>
+            int chapter = i;
+            <li class="chapter-item @(selectedChapter == chapter ? "selected" : "")" @onclick="(() => OnSelectChange(chapter))">@chapter </li>
         }
-    </select>
+    </ul>
+    <br />
 
     @if (isLoading)
     {
@@ -30,20 +42,28 @@ else
     <p>Erro - @errorMessage.ToString()</p>
 }
 
-
 @code {
     private FindBooks model;
     private Scripture scripture;
     private bool isLoading = true;
     private string errorMessage;
+    private int selectedChapter;
+    private string lastPageUrl;
+
+    [Parameter]
+    public string abbrev { get; set; }
+    [Parameter]
+    public string Name { get; set; }
 
     protected override void OnInitialized()
     {
         try
         {
             var bibleAPIService = new BibleAPIService(new HttpClient());
-            var response = bibleAPIService.GetChapter(abbrev);
-            model = response;
+            model = bibleAPIService.GetChapter(abbrev);
+            isLoading = false;
+            lastPageUrl = navigationManager.Uri;
+            OnSelectChange();
         }
         catch (Exception ex)
         {
@@ -51,14 +71,24 @@ else
             isLoading = false;
         }
     }
-    private void OnSelectChange(ChangeEventArgs e)
+    private void OnSelectChange(int i = 0)
     {
         var bibleAPIService = new BibleAPIService(new HttpClient());
-        var response = bibleAPIService.GetScripture(abbrev, e.Value.ToString());
-        scripture = response;
+        if (i == 0)
+        {
+            i = 1;
+            scripture = bibleAPIService.GetScripture(abbrev, i.ToString());
+        }
+        else
+        {
+            scripture = bibleAPIService.GetScripture(abbrev, i.ToString());
+        }
         isLoading = false;
+        selectedChapter = i;
+    }
+    private void GoBack()
+    {
+        navigationManager.NavigateTo("/biblia/");
     }
 
-    [Parameter]
-    public string abbrev { get; set; }
 }
